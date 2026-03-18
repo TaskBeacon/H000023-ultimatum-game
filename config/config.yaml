@@ -1,0 +1,218 @@
+subinfo_fields:
+  - name: subject_id
+    type: int
+    constraints:
+      min: 101
+      max: 999
+      digits: 3
+  - name: subname
+    type: string
+  - name: age
+    type: int
+    constraints:
+      min: 5
+      max: 80
+  - name: gender
+    type: choice
+    choices:
+      - Male
+      - Female
+
+subinfo_mapping:
+  subject_id: Subject ID (3 digits)
+  subname: Name
+  age: Age
+  gender: Gender
+  Male: Male
+  Female: Female
+  Participant Information: Participant Information
+  registration_failed: Registration failed
+  registration_successful: Registration successful
+  invalid_input: "{field} is invalid"
+
+window:
+  size: [1280, 720]
+  units: pix
+  screen: 0
+  bg_color: gray
+  fullscreen: true
+  fullscreen_lock_escape: true
+  monitor_width_cm: 35.5
+  monitor_distance_cm: 60
+
+task:
+  task_name: ultimatum_game_preview
+  save_path: ./outputs/human
+  total_blocks: 2
+  total_trials: 48
+  trial_per_block: 24
+  conditions: [fair, unfair, very_unfair]
+  key_list: ["f", "j"]
+  seed_mode: same_across_sub
+  overall_seed: 2025
+  delta: 1
+  language: Chinese
+  voice_name: zh-CN-YunyangNeural
+  voice_enabled: false
+  input_mode: keyboard
+  hide_cursor: true
+  force_quit_enabled: true
+  force_quit_shortcut: ctrl+q
+
+timing:
+  offer_cue_duration: 0.5
+  pre_decision_fixation_duration: 0.6
+  offer_decision_duration: 2.0
+  decision_confirmation_duration: 0.6
+  payoff_feedback_duration: 1.0
+  iti_duration: 0.8
+
+stimuli:
+  fixation:
+    type: text
+    text: "+"
+    color: white
+    height: 48
+    font: SimHei
+
+  instruction_text:
+    type: text
+    text: |
+      最后通牒博弈任务
+
+      你将看到“提议者”给出的分配方案。
+      按 F 接受方案，按 J 拒绝方案。
+      若拒绝，双方都得 0 分。
+
+      按空格键开始。
+    color: white
+    height: 28
+    wrapWidth: 980
+    font: SimHei
+
+  offer_cue:
+    type: text
+    text: |
+      对方正在提出分配方案
+      请准备做出决定
+    color: white
+    height: 34
+    wrapWidth: 980
+    font: SimHei
+
+  offer_panel:
+    type: text
+    text: |
+      分配方案
+      对方获得：{proposer_share} 分
+      你获得：{responder_share} 分
+    color: white
+    height: 40
+    wrapWidth: 980
+    font: SimHei
+
+  decision_accept:
+    type: text
+    text: 你选择了：接受
+    color: green
+    height: 40
+    font: SimHei
+
+  decision_reject:
+    type: text
+    text: 你选择了：拒绝
+    color: red
+    height: 40
+    font: SimHei
+
+  decision_timeout:
+    type: text
+    text: 未作答，按拒绝处理
+    color: yellow
+    height: 40
+    font: SimHei
+
+  payoff_feedback:
+    type: text
+    text: |
+      本轮你获得：{earned} 分
+      当前累计：{total_earned} 分
+    color: white
+    height: 38
+    wrapWidth: 980
+    font: SimHei
+
+  block_break:
+    type: text
+    text: |
+      第 {block_num}/{total_blocks} 区块结束
+      接受率：{accept_rate}
+      本区块收益：{block_earned} 分
+      累计收益：{total_earned} 分
+
+      按空格键继续
+    color: white
+    height: 28
+    wrapWidth: 980
+    font: SimHei
+
+  good_bye:
+    type: text
+    text: |
+      任务结束
+      最终收益：{total_earned} 分
+
+      按空格键退出
+    color: white
+    height: 30
+    wrapWidth: 980
+    font: SimHei
+
+triggers:
+  map:
+    exp_onset: 1
+    exp_end: 2
+    block_onset: 10
+    block_end: 11
+    fair_offer_cue_onset: 20
+    unfair_offer_cue_onset: 21
+    very_unfair_offer_cue_onset: 22
+    fair_pre_decision_fixation_onset: 23
+    unfair_pre_decision_fixation_onset: 24
+    very_unfair_pre_decision_fixation_onset: 25
+    fair_offer_decision_onset: 30
+    unfair_offer_decision_onset: 31
+    very_unfair_offer_decision_onset: 32
+    decision_response: 50
+    decision_timeout: 51
+    decision_confirmation_onset: 52
+    payoff_feedback_onset: 53
+    iti_onset: 60
+
+  driver:
+    type: serial_url
+    url: loop://
+    baudrate: 115200
+
+  timing:
+    post_delay_ms: 1
+
+  policy:
+    strict: false
+
+controller:
+  seed: 23023
+  enable_logging: true
+  offer_profiles:
+    fair:
+      label: 公平
+      proposer_share: 5
+      responder_share: 5
+    unfair:
+      label: 不公平
+      proposer_share: 7
+      responder_share: 3
+    very_unfair:
+      label: 极不公平
+      proposer_share: 9
+      responder_share: 1
