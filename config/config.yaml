@@ -43,8 +43,8 @@ window:
 task:
   task_name: ultimatum_game_preview
   save_path: ./outputs/human
-  total_blocks: 2
-  total_trials: 48
+  total_blocks: 3
+  total_trials: 72
   trial_per_block: 24
   conditions: [fair, unfair, very_unfair]
   key_list: ["f", "j"]
