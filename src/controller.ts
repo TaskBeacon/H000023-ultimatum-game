@@ -1,3 +1,5 @@
+import { PythonRandom } from "psyflow-web";
+
 export interface OfferProfile {
   label: string;
   proposer_share: number;
@@ -25,23 +27,6 @@ export interface DecisionRecord {
   total_earned: number;
 }
 
-function makeSeededRandom(seed: number): () => number {
-  let value = seed >>> 0;
-  return () => {
-    value = (value + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(value ^ (value >>> 15), 1 | value);
-    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function shuffleInPlace<T>(values: T[], rng: () => number): void {
-  for (let index = values.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(rng() * (index + 1));
-    [values[index], values[swapIndex]] = [values[swapIndex], values[index]];
-  }
-}
-
 function normalizeProfiles(raw: Record<string, Partial<OfferProfile>>): Record<string, OfferProfile> {
   const profiles: Record<string, OfferProfile> = {};
   for (const [key, value] of Object.entries(raw)) {
@@ -63,7 +48,7 @@ function normalizeProfiles(raw: Record<string, Partial<OfferProfile>>): Record<s
 }
 
 export class Controller {
-  private readonly rng: () => number;
+  private readonly rng: PythonRandom;
   private readonly profiles: Record<string, OfferProfile>;
   readonly seed: number;
   readonly enable_logging: boolean;
@@ -77,7 +62,7 @@ export class Controller {
   }) {
     this.seed = Number(args.seed ?? 2023);
     this.enable_logging = args.enable_logging !== false;
-    this.rng = makeSeededRandom(this.seed);
+    this.rng = new PythonRandom(this.seed);
     this.profiles = normalizeProfiles(args.offer_profiles);
   }
 
@@ -118,7 +103,7 @@ export class Controller {
     for (let index = 0; index < nTrials; index += 1) {
       scheduled.push(validConditions[index % validConditions.length]);
     }
-    shuffleInPlace(scheduled, this.rng);
+    this.rng.shuffle(scheduled);
 
     const planned: PlannedUltimatumCondition[] = [];
     scheduled.forEach((condition, index) => {

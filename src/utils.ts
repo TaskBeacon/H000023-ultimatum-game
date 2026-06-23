@@ -15,7 +15,7 @@ export function parse_ultimatum_condition(condition: string): PlannedUltimatumCo
 }
 
 export function summarizeBlock(rows: ReducedTrialRow[], blockId: string): {
-  accept_rate: string;
+  accept_rate: number;
   block_earned: number;
   total_earned: number;
 } {
@@ -25,7 +25,7 @@ export function summarizeBlock(rows: ReducedTrialRow[], blockId: string): {
   const blockEarned = blockRows.reduce((sum, row) => sum + Number(row.earned ?? 0), 0);
   const totalEarned = rows.length > 0 ? Number(rows[rows.length - 1].total_earned ?? 0) : 0;
   return {
-    accept_rate: `${((acceptedN / n) * 100).toFixed(1)}%`,
+    accept_rate: acceptedN / n,
     block_earned: blockEarned,
     total_earned: totalEarned
   };

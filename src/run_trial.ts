@@ -36,6 +36,10 @@ export function run_trial(
   const acceptKey = keyList[0] ?? "f";
   const rejectKey = keyList[1] ?? "j";
   const triggerMap = (settings.triggers ?? {}) as Record<string, unknown>;
+  const trigger = (name: string): number | null => {
+    const value = triggerMap[name];
+    return value == null ? null : Number(value);
+  };
 
   const offerCueDuration = Number(settings.offer_cue_duration ?? 0.5);
   const preDecisionFixationDuration = Number(settings.pre_decision_fixation_duration ?? 0.6);
@@ -59,7 +63,9 @@ export function run_trial(
     },
     stim_id: "offer_cue"
   });
-  offerCue.show({ duration: offerCueDuration }).to_dict();
+  offerCue
+    .show({ duration: offerCueDuration, onset_trigger: trigger(`${parsed.condition}_offer_cue_onset`) })
+    .to_dict();
 
   const preDecisionFixation = trial.unit("pre_decision_fixation").addStim(stimBank.get("fixation"));
   set_trial_context(preDecisionFixation, {
@@ -76,7 +82,12 @@ export function run_trial(
     },
     stim_id: "fixation"
   });
-  preDecisionFixation.show({ duration: preDecisionFixationDuration }).to_dict();
+  preDecisionFixation
+    .show({
+      duration: preDecisionFixationDuration,
+      onset_trigger: trigger(`${parsed.condition}_pre_decision_fixation_onset`)
+    })
+    .to_dict();
 
   const offerDecision = trial.unit("offer_decision").addStim(
     stimBank.get_and_format("offer_panel", {
@@ -107,6 +118,7 @@ export function run_trial(
       keys: [acceptKey, rejectKey],
       correct_keys: [acceptKey, rejectKey],
       duration: offerDecisionDuration,
+      onset_trigger: trigger(`${parsed.condition}_offer_decision_onset`),
       response_trigger: Number(triggerMap.decision_response ?? 50),
       timeout_trigger: Number(triggerMap.decision_timeout ?? 51)
     })
@@ -145,11 +157,21 @@ export function run_trial(
     task_factors: {
       stage: "decision_confirmation",
       condition: parsed.condition,
+      choice_label: (snapshot: TrialSnapshot) => snapshot.units.offer_decision?.choice_label,
+      accepted: (snapshot: TrialSnapshot) => snapshot.units.offer_decision?.accepted,
+      timed_out: (snapshot: TrialSnapshot) => snapshot.units.offer_decision?.timed_out,
       block_idx
     },
-    stim_id: "decision_confirmation"
+    stim_id: (snapshot: TrialSnapshot) => {
+      const choice = String(snapshot.units.offer_decision?.choice_label ?? "timeout");
+      if (choice === "accept") return "decision_accept";
+      if (choice === "reject") return "decision_reject";
+      return "decision_timeout";
+    }
   });
-  decisionConfirmation.show({ duration: decisionConfirmationDuration }).to_dict();
+  decisionConfirmation
+    .show({ duration: decisionConfirmationDuration, onset_trigger: trigger("decision_confirmation_onset") })
+    .to_dict();
 
   const payoffFeedback = trial.unit("payoff_feedback").addStim((snapshot: TrialSnapshot, runtime) =>
     stimBank.get_and_format("payoff_feedback", {
@@ -169,11 +191,13 @@ export function run_trial(
     task_factors: {
       stage: "payoff_feedback",
       condition: parsed.condition,
+      accepted: (snapshot: TrialSnapshot) => snapshot.units.offer_decision?.accepted,
+      earned: (snapshot: TrialSnapshot) => snapshot.units.offer_decision?.earned,
       block_idx
     },
     stim_id: "payoff_feedback"
   });
-  payoffFeedback.show({ duration: payoffFeedbackDuration }).to_dict();
+  payoffFeedback.show({ duration: payoffFeedbackDuration, onset_trigger: trigger("payoff_feedback_onset") }).to_dict();
 
   const iti = trial.unit("iti").addStim(stimBank.get("fixation"));
   set_trial_context(iti, {
@@ -189,7 +213,7 @@ export function run_trial(
     },
     stim_id: "fixation"
   });
-  iti.show({ duration: itiDuration }).to_dict();
+  iti.show({ duration: itiDuration, onset_trigger: trigger("iti_onset") }).to_dict();
 
   trial.finalize((snapshot, _runtime, helpers) => {
     const choiceLabel = resolveChoiceLabel(snapshot.units.offer_decision?.response, acceptKey, rejectKey);

@@ -19,16 +19,16 @@ subinfo_fields:
       - Female
 
 subinfo_mapping:
-  subject_id: Subject ID (3 digits)
-  subname: Name
-  age: Age
-  gender: Gender
-  Male: Male
-  Female: Female
-  Participant Information: Participant Information
-  registration_failed: Registration failed
-  registration_successful: Registration successful
-  invalid_input: "{field} is invalid"
+  subject_id: 被试编号（3位）
+  subname: 姓名
+  age: 年龄
+  gender: 性别
+  Male: 男
+  Female: 女
+  Participant Information: 被试信息
+  registration_failed: 注册失败
+  registration_successful: 注册成功
+  invalid_input: "{field} 输入无效"
 
 window:
   size: [1280, 720]
@@ -41,7 +41,7 @@ window:
   monitor_distance_cm: 60
 
 task:
-  task_name: ultimatum_game_preview
+  task_name: ultimatum_game
   save_path: ./outputs/human
   total_blocks: 3
   total_trials: 72
@@ -146,11 +146,11 @@ stimuli:
     type: text
     text: |
       第 {block_num}/{total_blocks} 区块结束
-      接受率：{accept_rate}
+      接受率：{accept_rate:.1%}
       本区块收益：{block_earned} 分
       累计收益：{total_earned} 分
 
-      按空格键继续
+      按空格键继续。
     color: white
     height: 28
     wrapWidth: 980
@@ -162,7 +162,7 @@ stimuli:
       任务结束
       最终收益：{total_earned} 分
 
-      按空格键退出
+      按空格键退出。
     color: white
     height: 30
     wrapWidth: 980
